@@ -202,9 +202,11 @@ int main(int argc, char* argv[]) {
   std::vector<std::string> model_locations;
   std::vector<uint32_t> repeat_num;
   std::vector<uint32_t> devs_id;
+  std::vector<uint32_t> core_idx;
+  std::vector<uint32_t> core_cnt;
   std::vector<std::vector<std::string>> inputs_data_files;
   UnpackConfig(
-      configfile, model_locations, repeat_num, devs_id, inputs_data_files);
+      configfile, model_locations, repeat_num, devs_id, core_idx, core_cnt, inputs_data_files);
 
   for (size_t i = 0; i < model_locations.size(); i++) {
     for (size_t j = 0; j < repeat_num[i]; j++) {
@@ -212,8 +214,14 @@ int main(int argc, char* argv[]) {
           TfLiteExternalDelegateOptionsDefault(delegate_so);
       const char* device_id_key = "device_id";
       const char* device_id_value = std::to_string(devs_id[i]).c_str();
+      const char* core_index_key = "core_index";
+      const char* core_index_value = std::to_string(core_idx[i]).c_str();
+      const char* core_count_key = "core_count";
+      const char* core_count_value = std::to_string(core_cnt[i]).c_str();
 
       options.insert(&options, device_id_key, device_id_value);
+      options.insert(&options, core_index_key, core_index_value);
+      options.insert(&options, core_count_key, core_count_value);
       runSingleWork(model_locations[i].c_str(), inputs_data_files[i], options);
     }
   }

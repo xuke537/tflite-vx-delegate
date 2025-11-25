@@ -386,6 +386,8 @@ TfLiteDelegate* Delegate::Create(const VxDelegateOptions* options) {
   delegate->parent.FreeBufferHandle = &FreeBufferHandle;
 
   delegate->device_id = options->device_id;
+  delegate->core_index = options->core_index;
+  delegate->core_count = options->core_count;
   delegate->allow_cache_mode = options->allowed_cache_mode;
   if(delegate->allow_cache_mode){
     delegate->cache_path = options->cache_file_path;
@@ -430,8 +432,28 @@ std::unique_ptr<vx::delegate::OpData> Delegate::Init(
   }
 
 #ifdef MULTI_DEVICE_FEATURE_MODE
-    devices_ = tim::vx::platform::NativeDevice::Enumerate();
+    devices_ = tim::vx::platform::IDevice::Enumerate();
     device_id_ = derivedDelegate->device_id;
+    core_index_ = derivedDelegate->core_index;
+    core_count_ = derivedDelegate->core_count;
+    if (device_id_ >= devices_.size()) {
+      TFLITE_LOG(TFLITE_LOG_WARNING,
+                 "vx_delegate Delegate::Init: device_id(%d) exceeds the count of devices(%d). Use device 0 as default",
+                 device_id_, devices_.size());
+      device_id_ = 0;
+    }
+    auto device = devices_.at(device_id_);
+    auto total_core_count = device->CoreCount();
+    core_index_ = core_index_ < 0 ? 0 : core_index_;
+    core_index_ = core_index_ >= total_core_count ? 0 : core_index_;
+    core_count_ = core_count_ < 1 ? total_core_count : core_count_;
+    if (core_index_ + core_count_ > total_core_count) {
+      core_count_ = total_core_count - core_index_;
+      TFLITE_LOG(TFLITE_LOG_WARNING,
+                 "vx_delegate Delegate::Init: core_index(%d) + core_count(%d) exceeds the count of core(%d). Fix the \
+                  the core count to %d",
+                 core_index_, derivedDelegate->core_count, total_core_count, core_count_);
+    }
 #endif
 
   compiled_ = false;
@@ -676,7 +698,7 @@ TfLiteStatus Delegate::Invoke(const OpData& op_data,
     // Do layout inference and get a new graph(first) and a tensor map(second).
     layout_infered_ = tim::transform::LayoutInference(graph_, context_);
 #ifdef MULTI_DEVICE_FEATURE_MODE
-      executor_ = std::make_shared<tim::vx::platform::NativeExecutor>(devices_[device_id_]);
+      executor_ = devices_[device_id_]->CreateExecutor(core_index_, core_count_, context_);
       executable_ = tim::vx::platform::Compile(layout_infered_.first, executor_);
 #else
     if(is_cache_present_ && !is_cache_present_.value()){
@@ -750,8 +772,7 @@ TfLiteStatus Delegate::Invoke(const OpData& op_data,
 
   TFLITE_LOG(TFLITE_LOG_INFO, "Invoking graph");
 #ifdef MULTI_DEVICE_FEATURE_MODE
-    auto executable_set = tim::vx::platform::CreateExecutableSet({executable_, executable_});
-    executor_->Submit(executable_set,executable_set);
+    executor_->Submit(executable_,executable_);
     executor_->Trigger();
     tensor_index = 0;
 #else

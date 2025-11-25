@@ -45,7 +45,6 @@
 
 #ifdef MULTI_DEVICE_FEATURE_MODE
   #include "tim/vx/platform/platform.h"
-  #include "tim/vx/platform/native.h"
 #endif
 
 namespace vx {
@@ -56,6 +55,10 @@ typedef struct {
   bool allowed_cache_mode;
   //Device in multi device mode
   int32_t device_id;
+  //Core index for multi core
+  int32_t core_index;
+  //Core count for multi core
+  int32_t core_count;
   //nbg binary path
   std::string cache_file_path;
   // Allowed ops to delegate.
@@ -94,6 +97,8 @@ struct DerivedDelegateData {
     TfLiteDelegate parent;
     bool allow_cache_mode;
     int32_t device_id;
+    int32_t core_index;
+    int32_t core_count;
     std::string cache_path;
 };
 
@@ -151,6 +156,8 @@ class Delegate {
   std::shared_ptr<tim::vx::platform::IExecutable> executable_;
   std::vector<std::shared_ptr<tim::vx::platform::ITensorHandle>> inputs_;
   std::vector<std::shared_ptr<tim::vx::platform::ITensorHandle>> outputs_;
+  int32_t core_index_;
+  int32_t core_count_;
 #endif
 
   std::shared_ptr<tim::vx::Context> context_;

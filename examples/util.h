@@ -81,6 +81,8 @@ void UnpackConfig(const char* filename,
                    std::vector<std::string>& model_locations,
                    std::vector<uint32_t>& model_num,
                    std::vector<uint32_t>& devs_id,
+                   std::vector<uint32_t>& core_idx,
+                   std::vector<uint32_t>& core_cnt,
                    std::vector<std::vector<std::string>>& inputs_datas);
 
 template <typename T>

@@ -94,6 +94,8 @@ void UnpackConfig(const char* filename,
                    std::vector<std::string>& model_locations,
                    std::vector<uint32_t>& model_num,
                    std::vector<uint32_t>& devs_id,
+                   std::vector<uint32_t>& core_idx,
+                   std::vector<uint32_t>& core_cnt,
                    std::vector<std::vector<std::string>>& inputs_datas) {
   std::ifstream file(filename);
 
@@ -134,6 +136,8 @@ void UnpackConfig(const char* filename,
         std::string s = p;
         auto nums = StringToInt(s);
         devs_id.push_back(nums[0]);
+        core_idx.push_back(nums[1]);
+        core_cnt.push_back(nums[2]);
         p = strtok(NULL, delim);
       } else {
         std::cout << "wrong device Id format in config.txt" << std::endl;

@@ -75,6 +75,8 @@ TfLiteDelegate* CreateVxDelegateFromOptions(char** options_keys,
 
   constexpr char kAllowedSaveLoadNBG[] = "allowed_cache_mode";
   constexpr char kDeviceId[] = "device_id";
+  constexpr char kCoreIndex[] = "core_index";
+  constexpr char kCoreCount[] = "core_count";
   constexpr char kAllowedBuiltinOp[] = "allowed_builtin_code";
   constexpr char kReportErrorDuingInit[] = "error_during_init";
   constexpr char kReportErrorDuingPrepare[] = "error_during_prepare";
@@ -85,6 +87,10 @@ TfLiteDelegate* CreateVxDelegateFromOptions(char** options_keys,
                                "Allowed save load nbg."),
       tflite::Flag::CreateFlag(kDeviceId, &options.device_id,
                                "device id"),
+      tflite::Flag::CreateFlag(kCoreIndex, &options.core_index,
+                               "core index"),
+      tflite::Flag::CreateFlag(kCoreCount, &options.core_count,
+                               "core count"),
       tflite::Flag::CreateFlag(kAllowedBuiltinOp, &options.allowed_builtin_code,
                                "Allowed builtin code."),
       tflite::Flag::CreateFlag(kReportErrorDuingInit,
@@ -107,6 +113,10 @@ TfLiteDelegate* CreateVxDelegateFromOptions(char** options_keys,
                    << options.allowed_cache_mode << ".";
   TFLITE_LOG(INFO) << "Vx delegate: device num set to "
                    << options.device_id << ".";
+  TFLITE_LOG(INFO) << "Vx delegate: core index set to "
+                   << options.core_index << ".";
+  TFLITE_LOG(INFO) << "Vx delegate: count count set to "
+                   << options.core_count << ".";
   TFLITE_LOG(INFO) << "Vx delegate: allowed_builtin_code set to "
                    << options.allowed_builtin_code << ".";
   TFLITE_LOG(INFO) << "Vx delegate: error_during_init set to "

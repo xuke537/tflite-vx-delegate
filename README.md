@@ -40,6 +40,26 @@ cmake .. -DCMAKE_TOOLCHAIN_FILE=<toolchain.cmake> -DEXTERNAL_VIV_SDK=<sdk_root>
 # OVXLIB_LIB=<full_path_to_libovxlib.so>
 ```
 
+If you would like to use VIPLite driver as NPU driver, you need enable tim-vx lite platform
+```sh
+#If you use the VIPLite driver as the NPU driver, you need the no-kernel version of the Vivante SDK as the NPU compiler.
+#Requirements: Vivante SDK >= 6.4.22 && ovxlib >= 1.2.26 && viplite >=2.0.0
+#Tim-vx after commit:7b24f4d
+#build Tim-vx with VIP_LITE_SDK
+cd tim-vx
+mkdir build && cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=<toolchain.cmake> -DEXTERNAL_VIV_SDK=<no_kernel_sdk_root> -DTIM_VX_USE_EXTERNAL_OVXLIB=ON \
+         -DOVXLIB_INC=<directory_to_ovxlib_include> -DOVXLIB_LIB=<full_path_to_libovxlib.so> -DTIM_VX_ENABLE_PLATFORM=ON  \
+         -DTIM_VX_ENABLE_PLATFORM_LITE=ON  -DVIP_LITE_SDK=<viplite_sdk_root>
+
+#build tflite-vx-delegate
+# The TFLITE_ENABLE_MULTI_DEVICE option needs to be enabled
+cd tflite-vx-delegate
+mkdir cmake_build && cd cmake_build
+cmake .. -DEXTERNAL_VIV_SDK=<no_kernel_sdk_root> -DTIM_VX_INSTALL=<directory_to_tim-vx_install> -DTFLITE_ENABLE_MULTI_DEVICE=ON
+
+```
+
 If you would like to build using local version of tensorflow, you can use `FETCHCONTENT_SOURCE_DIR_TENSORFLOW` cmake variable. Point this variable to your tensorflow tree. For additional details on this variable please see the [official cmake documentation](https://cmake.org/cmake/help/latest/module/FetchContent.html#command:fetchcontent_populate)
 
 ``` sh
